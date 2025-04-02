@@ -1,5 +1,4 @@
 import json
-import sys
 import numpy as np
 import argparse
 from string import ascii_uppercase
@@ -66,7 +65,6 @@ class UbiquitinChain(object):
         }
         self.use_template = use_template
         self.use_msa = use_msa
-        print (use_template, use_msa)
 
         # Load and store the connectivity
         con = np.loadtxt(fname, dtype=str, ndmin=2)
