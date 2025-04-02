@@ -230,3 +230,9 @@ ub = UbiquitinChain(args.filename,
                     use_template = not args.exclude_template,
                     use_msa = not args.exclude_msa)
 
+
+if len(ub.m1_links) != 0:
+    print ("Due to M1 linkages, the following chains have been relocated:")
+    for key in ub.seq_ptr.keys():
+        loc = ub.seq_ptr[key]
+        print (key, "->", ascii_uppercase[loc[0]], loc[1]+1)
