@@ -208,7 +208,7 @@ parser = argparse.ArgumentParser(
                     description = desc,
                     epilog = 'That\'s all folks!')
 parser.add_argument('filename')           # positional argument
-parser.add_argument('-n', '--name', type=str, help='name of the output json and the system')
+parser.add_argument('-n', '--name', type=str, help='name of the output json and the system', default='polyub')
 parser.add_argument('--extra-seq', nargs="*", help='extra sequences')
 parser.add_argument('--exclude-template', action='store_true', default=False)
 parser.add_argument('--exclude-msa', action='store_true', default=False)
