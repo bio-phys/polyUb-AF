@@ -122,10 +122,17 @@ class UbiquitinChain(object):
             # Update the first pointer
             ptA[0] = ptB[0]
 
-        self.seq_tab = seq_tab
-        self.seq_ptr = seq_ptr
         # Only these rows of seq_tab are valid
-        self.valid_rows = np.sort(np.unique([elem[0] for elem in seq_ptr.values()]))
+        valid_rows = np.sort(np.unique([elem[0] for elem in seq_ptr.values()]))
+        # Update seq_ptr to eliminate unnecessary chains
+        for i,row in enumerate(np.flip(valid_rows)):
+            for key in seq_ptr.keys():
+                if seq_ptr[key][0] == row:
+                    seq_ptr[key][0] = len(valid_rows)-i -1
+
+        # Only the valid rows are kept
+        self.seq_ptr = seq_ptr
+        self.seq_tab = [seq_tab[i] for i in valid_rows]
 
 
     def mutate_anchor(self):
@@ -155,15 +162,18 @@ class UbiquitinChain(object):
 
         # Get the valid row identifiers
         sequence_list = []
-        for i,r in enumerate(self.valid_rows):
-            seq_rec = sequence_template(ascii_uppercase[i], self.seq_tab[r], use_template=self.use_template, use_msa=self.use_msa)
+        for i,seq in enumerate(self.seq_tab):
+            chainID = ascii_uppercase[i]
+            seq_rec = sequence_template(chainID, seq, use_template=self.use_template, use_msa=self.use_msa)
             sequence_list.append(seq_rec)
 
         # Create the linker instances. The C-ter G76-s are unique, and can be used as a linkerID.
         # To distinguish from chains, use a two-letter ID, starting with L.
         for linker in self.proper_links:
             print (f" Creating linker for {linker[0]}-{linker[1]}")
-            sequence_list.append(linker_template("L"+linker[0]))
+            # NOTE: this it the chainID after the lookup! Does not have to match linker[0] or linker[1]!
+            chainID = ascii_uppercase[self.seq_ptr[linker[0]][0]]
+            sequence_list.append(linker_template("L"+chainID))
 
         # Extra sequences (non-ubiquitin) are prepended with an 'E'
         if self.extra_seq is not None:
@@ -178,13 +188,14 @@ class UbiquitinChain(object):
 
     def create_bonds(self):
         # Create bonds section
+        breakpoint()
         linker_list = []
         for cter_aa, mid_aa, link in self.proper_links:
             print (f" Linking {cter_aa}-G76 to {mid_aa}-K{link}")
             ca = ascii_uppercase[self.seq_ptr[cter_aa][0]]
             ma = ascii_uppercase[self.seq_ptr[mid_aa][0]]
             cterID = len(self.seq_tab[self.seq_ptr[cter_aa][0]])
-            linker_list += bondedAtomPairs(ca,ma, cterID, int(link)+self.seq_ptr[ma][1])
+            linker_list += bondedAtomPairs(ca,ma, cterID, int(link)+self.seq_ptr[mid_aa][1])
 
         self.out_json["bondedAtomPairs"] = linker_list
 
@@ -214,10 +225,9 @@ parser.add_argument('--exclude-template', action='store_true', default=False)
 parser.add_argument('--exclude-msa', action='store_true', default=False)
 args = parser.parse_args()
 
-# print (args)
-
 ub = UbiquitinChain(args.filename,
                     name = args.name,
                     extra_seq = args.extra_seq,
                     use_template = not args.exclude_template,
                     use_msa = not args.exclude_msa)
+
