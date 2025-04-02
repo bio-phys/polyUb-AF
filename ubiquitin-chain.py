@@ -188,7 +188,6 @@ class UbiquitinChain(object):
 
     def create_bonds(self):
         # Create bonds section
-        breakpoint()
         linker_list = []
         for cter_aa, mid_aa, link in self.proper_links:
             print (f" Linking {cter_aa}-G76 to {mid_aa}-K{link}")
