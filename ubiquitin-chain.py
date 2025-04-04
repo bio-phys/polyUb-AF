@@ -75,7 +75,7 @@ class UbiquitinChain(object):
         ub_ids = np.unique(self.connections[:,:2].flatten())
         # The second, '-' character means no linkage!
         mask = ub_ids == '-'
-        self.ub_ids = ub_ids[~mask]
+        self.ub_ids = np.sort(ub_ids[~mask])
         self.n_links = len(self.connections) - mask.sum()
 
         # Separate the two kinds of linkages
@@ -101,38 +101,36 @@ class UbiquitinChain(object):
 
 
     def connect_m1_chains(self):
-        # Create an Ub chain table and Ub chain pointers
-        seq_tab = []
-        seq_ptr = {}
-
-        for i, ub_id in enumerate(self.ub_ids):
-            seq_tab.append(UbiquitinChain.ub_seq)
-            seq_ptr[ub_id] = [i,0]
+        # Create list with single chain IDs, to be combined
+        chain_order = self.ub_ids.astype(f"<U{len(self.ub_ids)}")
 
         # Introduce all the M1 linkages
-        for chA, chB, resID in self.m1_links:
-            ptA = seq_ptr[chA]
-            ptB = seq_ptr[chB]
-            # Elongate the chain
-            seq_tab[ptB[0]] += self.ub_seq
-            # Shift all indices in this row
-            for key in seq_ptr.keys():
-                if seq_ptr[key][0] == ptB[0]:
-                    seq_ptr[key][1] += len(self.ub_seq)
-            # Update the first pointer
-            ptA[0] = ptB[0]
+        for chB, chA, _ in self.m1_links:
+            # Look up the current entry with chains A and B
+            # NOTE: it's an error if there's no such element!
+            for i,elem in enumerate(chain_order):
+                if chA in elem:
+                    idA  = i
+                    seqA = elem
+                if chB in elem:
+                    idB  = i
+                    seqB = elem
 
-        # Only these rows of seq_tab are valid
-        valid_rows = np.sort(np.unique([elem[0] for elem in seq_ptr.values()]))
-        # Update seq_ptr to eliminate unnecessary chains
-        for i,row in enumerate(np.flip(valid_rows)):
-            for key in seq_ptr.keys():
-                if seq_ptr[key][0] == row:
-                    seq_ptr[key][0] = len(valid_rows)-i -1
+            assert seqA != seqB, "Error! Trying to link an already linked chain!"
 
-        # Only the valid rows are kept
+            chain_order[idA] = seqB + seqA
+            chain_order = np.delete (chain_order, idB)
+
+        # Store indices in a pointer and create the sequences
+        seq_ptr = {}
+        seq_tab = []
+        for i, line in enumerate(chain_order):
+            for j, elem in enumerate(line):
+                seq_ptr[elem] = [i,j*len(self.ub_seq)]
+            seq_tab.append(self.ub_seq * len(line))
+
+        self.seq_tab = seq_tab
         self.seq_ptr = seq_ptr
-        self.seq_tab = [seq_tab[i] for i in valid_rows]
 
 
     def mutate_anchor(self):
