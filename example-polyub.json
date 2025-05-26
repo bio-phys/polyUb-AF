@@ -1,0 +1,94 @@
+{
+    "name": "polyub",
+    "modelSeeds": [
+        1
+    ],
+    "dialect": "alphafold3",
+    "version": 2,
+    "sequences": [
+        {
+            "protein": {
+                "id": "A",
+                "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGMQIFVKTLTGATITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGMQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+            }
+        },
+        {
+            "protein": {
+                "id": "B",
+                "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGMQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+            }
+        },
+        {
+            "protein": {
+                "id": "C",
+                "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGAQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+            }
+        },
+        {
+            "ligand": {
+                "id": "LB",
+                "ccdCodes": [
+                    "TME"
+                ]
+            }
+        },
+        {
+            "ligand": {
+                "id": "LA",
+                "ccdCodes": [
+                    "TME"
+                ]
+            }
+        }
+    ],
+    "bondedAtomPairs": [
+        [
+            [
+                "A",
+                87,
+                "CB"
+            ],
+            [
+                "LB",
+                1,
+                "C1"
+            ]
+        ],
+        [
+            [
+                "B",
+                152,
+                "OXT"
+            ],
+            [
+                "LB",
+                1,
+                "C3"
+            ]
+        ],
+        [
+            [
+                "C",
+                48,
+                "CB"
+            ],
+            [
+                "LA",
+                1,
+                "C1"
+            ]
+        ],
+        [
+            [
+                "A",
+                228,
+                "OXT"
+            ],
+            [
+                "LA",
+                1,
+                "C3"
+            ]
+        ]
+    ]
+}
