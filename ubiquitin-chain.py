@@ -3,6 +3,27 @@ import numpy as np
 import argparse
 from string import ascii_uppercase
 
+class AlphaIndex:
+    """ ascii_uppercase can run out of letters for large protein complexes, such as the proteasome.
+        Then, two-letter combinations are generated.
+    """
+    def __init__(self):
+        self.letters = ascii_uppercase
+        self.base = len(self.letters)
+
+    def __getitem__(self, index):
+        if index < 0:
+            raise IndexError("Negative indexing not supported.")
+        result = ""
+        while True:
+            index, rem = divmod(index, self.base)
+            result = self.letters[rem] + result
+            if index == 0:
+                break
+            index -= 1  # Adjust for zero-based indexing
+        return result
+
+alpha = AlphaIndex()
 
 def sequence_template(seq_id, seq, use_template=True, use_msa=True):
     """ Print a single seuqence with a given id.
@@ -161,7 +182,7 @@ class UbiquitinChain(object):
         # Get the valid row identifiers
         sequence_list = []
         for i,seq in enumerate(self.seq_tab):
-            chainID = ascii_uppercase[i]
+            chainID = alpha[i]
             seq_rec = sequence_template(chainID, seq, use_template=self.use_template, use_msa=self.use_msa)
             sequence_list.append(seq_rec)
 
@@ -170,13 +191,13 @@ class UbiquitinChain(object):
         for linker in self.proper_links:
             print (f" Creating linker for {linker[0]}-{linker[1]}")
             # NOTE: this it the chainID after the lookup! Does not have to match linker[0] or linker[1]!
-            chainID = ascii_uppercase[self.seq_ptr[linker[0]][0]]
+            chainID = alpha[self.seq_ptr[linker[0]][0]]
             sequence_list.append(linker_template("L"+chainID))
 
         # Extra sequences (non-ubiquitin) are prepended with an 'E'
         if self.extra_seq is not None:
             for i, seq in enumerate(args.extra_seq):
-                seq_rec = sequence_template('E'+ascii_uppercase[i],seq=seq)
+                seq_rec = sequence_template('E'+alpha[i],seq=seq)
                 sequence_list.append(seq_rec)
 
         # Add sequences to the output json
@@ -189,8 +210,8 @@ class UbiquitinChain(object):
         linker_list = []
         for cter_aa, mid_aa, link in self.proper_links:
             print (f" Linking {cter_aa}-G76 to {mid_aa}-K{link}")
-            ca = ascii_uppercase[self.seq_ptr[cter_aa][0]]
-            ma = ascii_uppercase[self.seq_ptr[mid_aa][0]]
+            ca = alpha[self.seq_ptr[cter_aa][0]]
+            ma = alpha[self.seq_ptr[mid_aa][0]]
             cterID = len(self.seq_tab[self.seq_ptr[cter_aa][0]])
             linker_list += bondedAtomPairs(ca,ma, cterID, int(link)+self.seq_ptr[mid_aa][1])
 
@@ -233,4 +254,5 @@ if len(ub.m1_links) != 0:
     print ("Due to M1 linkages, the following chains have been relocated:")
     for key in ub.seq_ptr.keys():
         loc = ub.seq_ptr[key]
-        print (key, "->", ascii_uppercase[loc[0]], loc[1]+1)
+        print (key, "->", alpha[loc[0]], loc[1]+1)
+
